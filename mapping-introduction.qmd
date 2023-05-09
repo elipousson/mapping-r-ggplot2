@@ -1,0 +1,535 @@
+---
+title: "Mapping spatial data with R, ggplot2, and more"
+format:
+  revealjs:
+    scrollable: true
+    center: false
+    output-location: fragment
+    slide-level: 5
+    slide-number: true
+    progress: true
+execute:
+  echo: true
+  message: false
+  warning: false
+---
+
+```{r setup, include=FALSE}
+options(tigris_use_cache = TRUE, tigris_year = 2021, tigris_progress_bar = FALSE)
+```
+
+# Overview
+
+-   Working with spatial data using `{sf}` and `{dplyr}`
+-   Mapping spatial data with `{ggplot2}`
+-   Enhancing maps with extension packages
+
+# Working with spatial data using `{sf}` and `{dplyr}`
+
+::: columns
+::: {.column width="30%"}
+![](https://user-images.githubusercontent.com/520851/34887433-ce1d130e-f7c6-11e7-83fc-d60ad4fae6bd.gif)
+:::
+
+::: {.column width="70%"}
+-   The sf package implements a *simple features data model* for vector spatial data in R
+-   Vector geometries: *points*, *lines*, and *polygons* stored in a list-column of a data frame
+:::
+:::
+
+------------------------------------------------------------------------
+
+![](https://user-images.githubusercontent.com/520851/50280460-e35c1880-044c-11e9-9ed7-cc46754e49db.jpg){fig-align="center"}
+
+A simple feature (or `sf`) object is a `data.frame` with a "sticky" geometry column.
+
+### Reading data with `read_sf()`
+
+Load the `{sf}` package and read a shapefile into your environment with `read_sf()`:
+
+```{r}
+library(sf)
+
+nc <- read_sf(system.file("shape/nc.shp", package = "sf"))
+```
+
+### Working with `sf` data.frames
+
+You can subset columns and view a sf object just like any other data.frame in R:
+
+```{r}
+nc[1:2, ]
+```
+
+### Working with `sf` data.frames using `{dplyr}`
+
+You can also use `{dplyr}` to sort a data.frame:
+
+```{r}
+library(dplyr)
+
+arrange(nc, desc(NAME))
+```
+
+### Working with `sf` data.frames using `{dplyr}`
+
+You can filter a data.frame by attributes:
+
+```{r}
+filter(nc, AREA > 0.2)
+```
+
+### What about the geometry -- the *spatial* data?
+
+The geometry column is a simple feature collection or `sfc` list column.
+
+```{r}
+class(nc$geometry)
+```
+
+### What about the geometry -- the *spatial* data?
+
+A `sfc` object is a list of `sfg` or simple feature geometry objects.
+
+```{r}
+class(nc$geometry[[1]])
+```
+
+### Functions for working with `sf` geometry
+
+The `{sf}` package provides a range of functions for exploring the geometry, coordinate reference system, bounding box, and other attributes of a simple feature object.
+
+### Functions for working with `sf` geometry
+
+You can subset the geometry column:
+
+```{r}
+nc$geometry
+```
+
+### Functions for working with `sf` geometry
+
+You can check the geometry type with `st_geometry_type()`:
+
+```{r}
+st_geometry_type(nc, by_geometry = FALSE)
+```
+
+### Functions for working with `sf` geometry
+
+You can look up the coordinate reference system with `st_crs()`:
+
+```{r}
+st_crs(nc)
+```
+
+### Functions for working with `sf` geometry
+
+You can get a bounding box for the geometry with `st_bbox()`:
+
+```{r}
+st_bbox(nc)
+```
+
+### Plotting `sf` objects
+
+Of course, you probably want to *see* the geometry as well. You can use the built-in `plot()` method to make simple maps:
+
+```{r}
+plot(nc)
+```
+
+## Explore data interactively with `{mapview}`
+
+You can also explore data interactively with `{mapview}`:
+
+```{r}
+#| output-location: slide
+library(mapview)
+mapview(nc)
+```
+
+## Mapping spatial data with `{ggplot2}`
+
+Before making a map `{ggplot2}`, we can start by downloading Maryland counties with the `{tigris}` package:
+
+```{r}
+library(tigris)
+
+md_counties <- counties(state = "MD", progress_bar = FALSE)
+md_counties
+```
+
+### Creating a simple map with `{ggplot2}`
+
+After loading the `{ggplot2}` package, making a map is as simple as supplying your data to `ggplot()` and adding a `geom_sf()` function:
+
+```{r}
+#| output-location: slide
+library(ggplot2)
+
+ggplot(data = md_counties) +
+  geom_sf(
+    color = "black",
+    fill = "white"
+  )
+```
+
+### Adding a theme to a map
+
+You can modify this map using a ggplot2 theme. `theme_void()`, for example, hides the graticules (grid lines) and axes:
+
+```{r}
+#| output-location: slide
+ggplot(data = md_counties) +
+  geom_sf(
+    color = "black",
+    fill = "white"
+  ) +
+  theme_void()
+```
+
+### Adding text or labels to a map
+
+You can add text with `geom_sf_text()` or a label with `geom_sf_label()` (using the `nudge_x` and `nudge_y` parameters to adjust label or text position):
+
+```{r}
+#| output-location: slide
+ggplot(data = md_counties) +
+  geom_sf(color = "black", fill = "white") +
+  geom_sf_label(
+    data = \(x) {
+      filter(x, NAMELSAD == "Baltimore city")
+    },
+    mapping = aes(label = NAMELSAD),
+    nudge_x = 0.3,
+    nudge_y = 0.1
+  ) +
+  theme_void()
+```
+
+### Reading data from Maryland iMap
+
+![](images/2023-05-08_md-imap_screenshot.png)
+
+### Reading data from Maryland iMap
+
+I'll use [MTA bus stops](https://data.imap.maryland.gov/datasets/maryland::maryland-transit-mta-bus-stops-1/explore?location=39.018227%2C-77.101650%2C8.85) for this workshop but pick a dataset that interests you.
+
+![](images/2023-05-08_md-imap_screenshot-detail.png)
+
+### Reading data from Maryland iMap
+
+Find a GeoJSON URL and read with `sf::read_sf()`:
+
+```{r}
+mta_stops <- read_sf("https://geodata.md.gov/imap/rest/services/Transportation/MD_Transit/FeatureServer/9/query?outFields=*&where=1%3D1&f=geojson")
+```
+
+### Reading data from Maryland iMap
+
+Load dplyr and you can take a look at the object attributes with `dplyr::glimpse()`:
+
+```{r}
+glimpse(mta_stops)
+```
+
+------------------------------------------------------------------------
+
+Make a map with `md_counties` and your additional data as a new layer:
+
+```{r}
+#| output-location: slide
+ggplot(data = mta_stops) +
+  geom_sf(data = md_counties, fill = NA, color = "gray25") +
+  geom_sf(aes(color = Shelter), alpha = 0.2, size = 0.75)
+```
+
+### 🤔 Refining a map
+
+This doesn't look quite right yet. Let's try out a few more changes:
+
+-   Use `ggplot2::coord_sf()` to modify the map limits
+-   Get roads and water from using `tigris::roads()` or `tigris::area_water()`
+-   Apply a color scale from ColorBrewer using `ggplot2::scale_color_brewer()` or `ggplot2::scale_color_distiller()`
+-   Limit stops to city using `sf::st_crop()` or `sf::st_filter()`
+
+```{r}
+#| echo: false
+mta_stop_map <-
+  ggplot(data = mta_stops) +
+  geom_sf(data = md_counties, fill = NA, color = "gray25") +
+  geom_sf(aes(color = Shelter), alpha = 0.2, size = 0.75)
+
+mta_stop_map
+```
+
+### Use `coord_sf()` to modify the map limits
+
+Filter Baltimore City from md_counties and convert the sf object into a bounding box:
+
+```{r}
+baltimore_city <- filter(md_counties, NAMELSAD == "Baltimore city")
+baltimore_bbox <- st_bbox(baltimore_city)
+```
+
+Pass the `xmin` and `xmax` values from the bounding box to `xlim` and the `ymin` and `ymax` values from the bounding box to `ylim`:
+
+```{r}
+baltimore_bbox_lims <- coord_sf(
+  xlim = c(baltimore_bbox$xmin, baltimore_bbox$xmax),
+  ylim = c(baltimore_bbox$ymin, baltimore_bbox$ymax)
+)
+```
+
+### Use `coord_sf()` to modify the map limits
+
+```{r}
+#| output-location: slide
+mta_stop_map +
+  baltimore_bbox_lims +
+  theme_void()
+```
+
+### Add roads and water from `{tigris}`
+
+```{r}
+baltimore_roads <- roads(state = "MD", county = "Baltimore city")
+baltimore_water <- area_water(state = "MD", county = "Baltimore city")
+```
+
+### Combine layers into a list for reuse as a basemap
+
+```{r}
+#| output-location: slide
+baltimore_layers <-
+  list(
+    geom_sf(data = baltimore_city, fill = "white", color = "black", linewidth = 0.25),
+    geom_sf(data = baltimore_water, fill = "slateblue4", color = NA),
+    geom_sf(data = baltimore_roads, color = "gray20", linewidth = 0.035),
+    theme_void()
+  )
+
+baltimore_basemap <- ggplot() +
+  baltimore_layers
+
+baltimore_basemap
+```
+
+### Apply a color scale from ColorBrewer
+
+Start with the default colors:
+
+```{r}
+#| output-location: slide
+baltimore_basemap +
+  geom_sf(data = mta_stops, aes(color = Shelter), alpha = 0.35, size = 0.35) +
+  baltimore_bbox_lims
+```
+
+### Set qualitative color scales with `scale_color_brewer()`
+
+```{r}
+#| output-location: slide
+baltimore_basemap +
+  geom_sf(
+    data = mta_stops,
+    aes(color = Shelter),
+    alpha = 0.4, size = 0.6
+  ) +
+  baltimore_bbox_lims +
+  scale_color_brewer(type = "qual", palette = "Dark2")
+```
+
+### Set continuous color scales with `scale_color_distiller()`
+
+```{r}
+#| output-location: slide
+baltimore_basemap +
+  geom_sf(
+    data = mta_stops,
+    aes(color = Rider_Total),
+    alpha = 0.4, size = 0.6
+  ) +
+  baltimore_bbox_lims +
+  scale_color_distiller(
+    palette = "YlGn",
+    direction = 1, trans = "log",
+    labels = scales::number
+  )
+```
+
+## Use `st_crop()` or `st_filter()` to trim data to area
+
+Match the coordinate reference system for two objects to crop or filter data:
+
+```{r}
+mta_stops <- st_transform(mta_stops, 4269)
+
+mta_stops_cropped <- st_crop(mta_stops, baltimore_bbox)
+
+mta_stops_filtered <- st_filter(mta_stops, baltimore_city)
+```
+
+------------------------------------------------------------------------
+
+Compare the original stop data, stops cropped to Baltimore city's bounding box, and stops filtered to Baltimore city's geometry:
+
+```{r}
+#| output-location: slide
+ggplot() +
+  geom_sf(data = mta_stops, color = "black", size = 0.1) +
+  geom_sf(data = mta_stops_cropped, color = "orange", alpha = 0.2) +
+  geom_sf(data = mta_stops_filtered, color = "purple", alpha = 0.2) +
+  baltimore_bbox_lims +
+  theme_void()
+```
+
+------------------------------------------------------------------------
+
+You can also pass a list of objects to mapview to create layers and compare interactively:
+
+```{r}
+#| eval: false
+mapview(list(mta_stops_cropped, mta_stops_filtered))
+```
+
+### 🎨 Refine maps using ggplot2 and extension packages
+
+-   Use `labs()` to customize title and attribute labels
+-   Label points with `ggrepel::geom_text_repel()`
+-   Use basemaps from `{mapboxapi}`
+-   Combine maps with `{patchwork}`
+
+### Adjust label positions with `ggrepel::geom_text_repel()`
+
+```{r}
+#| output-location: slide
+library(ggrepel)
+
+baltimore_basemap +
+  geom_sf(
+    data = slice_max(mta_stops_filtered, order_by = desc(Stop_Ridership_Rank), n = 100),
+    mapping = aes(size = Rider_Total),
+    color = "purple", alpha = 0.3
+  ) +
+  geom_text_repel(
+    data = slice_max(mta_stops_filtered, order_by = desc(Stop_Ridership_Rank), n = 5),
+    aes(label = paste0(Stop_Ridership_Rank, ". ", stop_name), geometry = geometry),
+    size = 2, stat = "sf_coordinates"
+  ) +
+  baltimore_bbox_lims +
+  labs(
+    title = "Baltimore city's 100 busiest bus stops",
+    size = "Total ridership"
+  )
+```
+
+### Use custom basemaps with `mapboxapi::layer_static_mapbox()`
+
+```{r}
+#| output-location: slide
+
+library(mapboxapi)
+
+mapbox_dark <-
+  ggplot() +
+  layer_static_mapbox(
+    location = baltimore_city,
+    style_url = "mapbox://styles/mapbox/dark-v10"
+  ) +
+  geom_sf(
+    data = mta_stops_filtered,
+    color = "yellow",
+    alpha = 0.2,
+    size = 0.05
+  ) +
+  theme_void()
+
+mapbox_dark
+```
+
+### Add custom inset maps with `patchwork::inset_element()`
+
+```{r}
+library(patchwork)
+
+md_counties <- st_transform(md_counties, 3857)
+baltimore_city <- st_transform(baltimore_city, 3857)
+
+md_map <- ggplot() +
+  geom_sf(data = md_counties, fill = "white", color = "black") +
+  geom_sf(data = baltimore_city, fill = "yellow") +
+  theme_void()
+
+inset_md_map <-
+  inset_element(
+    md_map,
+    left = 0.1,
+    right = 0.65,
+    top = 0.4,
+    bottom = 0.075
+  )
+
+mapbox_dark + inset_md_map
+```
+
+
+### Add shadows with `ggfx::with_shadow()`
+
+```{r}
+library(ggfx)
+
+md_map <- ggplot() +
+  with_shadow(
+    geom_sf(data = md_counties, fill = "white", color = "black"),
+    x_offset = 3,
+    y_offset = 3
+  ) +
+  with_shadow(
+    geom_sf(data = baltimore_city, fill = "yellow"),
+    color = "gray20",
+    x_offset = 1,
+    y_offset = 1
+  ) +
+  theme_void()
+
+md_map
+```
+
+
+### Add shadows with `ggfx::with_shadow()`
+
+```{r}
+baltimore_bbox <- st_bbox(baltimore_city)
+
+mapbox_dark +
+  geom_sf(
+    data = st_difference(md_counties, baltimore_city),
+    fill = "white",
+    alpha = 1,
+    color = NA
+  ) +
+  coord_sf(
+    xlim = c(baltimore_bbox$xmin, baltimore_bbox$xmax),
+    ylim = c(baltimore_bbox$ymin, baltimore_bbox$ymax)
+  ) +
+  inset_element(
+    md_map,
+    left = 0.1,
+    right = 0.65,
+    top = 0.4,
+    bottom = 0.075
+  )
+```
+
+### Convert static maps to interactive maps with {plotly}
+
+```{r}
+md_counties_map <- ggplot() +
+  geom_sf(data = md_counties, aes(fill = NAMELSAD))
+
+plotly::ggplotly(md_counties_map)
+```
+
+
