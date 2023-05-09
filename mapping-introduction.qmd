@@ -226,7 +226,7 @@ Find a GeoJSON URL and read with `sf::read_sf()`:
 mta_stops <- read_sf("https://geodata.md.gov/imap/rest/services/Transportation/MD_Transit/FeatureServer/9/query?outFields=*&where=1%3D1&f=geojson")
 ```
 
-### Reading data from Maryland iMap
+### Explore data after reading with `dplyr::glimpse()` 
 
 Load dplyr and you can take a look at the object attributes with `dplyr::glimpse()`:
 
@@ -235,6 +235,8 @@ glimpse(mta_stops)
 ```
 
 ------------------------------------------------------------------------
+
+### Map attributes to aesthetics using `aes()`
 
 Make a map with `md_counties` and your additional data as a new layer:
 
@@ -266,7 +268,7 @@ mta_stop_map
 
 ### Use `coord_sf()` to modify the map limits
 
-Filter Baltimore City from md_counties and convert the sf object into a bounding box:
+Filter Baltimore City from md_counties and convert the `sf` object into a bounding box (a `bbox`):
 
 ```{r}
 baltimore_city <- filter(md_counties, NAMELSAD == "Baltimore city")
@@ -292,6 +294,8 @@ mta_stop_map +
 ```
 
 ### Add roads and water from `{tigris}`
+
+The tigris package is a helpful source for physical data as well as administrative data. For example, you can download roads and water areas:
 
 ```{r}
 baltimore_roads <- roads(state = "MD", county = "Baltimore city")
@@ -452,6 +456,7 @@ mapbox_dark
 ### Add custom inset maps with `patchwork::inset_element()`
 
 ```{r}
+#| output-location: slide
 library(patchwork)
 
 md_counties <- st_transform(md_counties, 3857)
@@ -478,6 +483,7 @@ mapbox_dark + inset_md_map
 ### Add shadows with `ggfx::with_shadow()`
 
 ```{r}
+#| output-location: slide
 library(ggfx)
 
 md_map <- ggplot() +
@@ -501,6 +507,7 @@ md_map
 ### Add shadows with `ggfx::with_shadow()`
 
 ```{r}
+#| output-location: slide
 baltimore_bbox <- st_bbox(baltimore_city)
 
 mapbox_dark +
@@ -526,6 +533,7 @@ mapbox_dark +
 ### Convert static maps to interactive maps with {plotly}
 
 ```{r}
+#| output-location: slide
 md_counties_map <- ggplot() +
   geom_sf(data = md_counties, aes(fill = NAMELSAD))
 
@@ -533,3 +541,25 @@ plotly::ggplotly(md_counties_map)
 ```
 
 
+## Resources
+
+### Essential R packages
+
+- [sf](https://r-spatial.github.io/sf/)
+- [dplyr](https://dplyr.tidyverse.org/)
+- [ggplot2](https://ggplot2.tidyverse.org/)
+- [scales](https://scales.r-lib.org/)
+- [tmap](https://r-tmap.github.io/tmap/) (good alternative to ggplot2 for mapping)
+
+### ggplot2 extension packages
+
+- [ggrepel](https://ggrepel.slowkow.com/)
+- [ggfx](https://ggfx.data-imaginist.com/)
+- [ggforce](https://ggforce.data-imaginist.com/)
+- [patchwork](https://patchwork.data-imaginist.com/)
+
+### Additional packages for spatial data
+
+- [mapview](https://r-spatial.github.io/mapview/)
+- [tigris](https://github.com/walkerke/tigris)
+- [mapboxapi](https://walker-data.com/mapboxapi/)
