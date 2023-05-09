@@ -1,0 +1,30 @@
+[
+  {
+    "objectID": "mapping-introduction.html#explore-data-interactively-with-mapview",
+    "href": "mapping-introduction.html#explore-data-interactively-with-mapview",
+    "title": "Mapping spatial data with R, ggplot2, and more",
+    "section": "Explore data interactively with {mapview}",
+    "text": "Explore data interactively with {mapview}\nYou can also explore data interactively with {mapview}:\n\nlibrary(mapview)\nmapview(nc)"
+  },
+  {
+    "objectID": "mapping-introduction.html#explore-data-interactively-with-mapview-output",
+    "href": "mapping-introduction.html#explore-data-interactively-with-mapview-output",
+    "title": "Mapping spatial data with R, ggplot2, and more",
+    "section": "Explore data interactively with {mapview}",
+    "text": "Explore data interactively with {mapview}"
+  },
+  {
+    "objectID": "mapping-introduction.html#mapping-spatial-data-with-ggplot2",
+    "href": "mapping-introduction.html#mapping-spatial-data-with-ggplot2",
+    "title": "Mapping spatial data with R, ggplot2, and more",
+    "section": "Mapping spatial data with {ggplot2}",
+    "text": "Mapping spatial data with {ggplot2}\nBefore making a map {ggplot2}, we can start by downloading Maryland counties with the {tigris} package:\n\nlibrary(tigris)\n\nmd_counties &lt;- counties(state = \"MD\", progress_bar = FALSE)\nmd_counties\n\n\n\nSimple feature collection with 24 features and 17 fields\nGeometry type: MULTIPOLYGON\nDimension:     XY\nBounding box:  xmin: -79.48765 ymin: 37.88661 xmax: -74.98628 ymax: 39.72304\nGeodetic CRS:  NAD83\nFirst 10 features:\n     STATEFP COUNTYFP COUNTYNS GEOID         NAME            NAMELSAD LSAD\n131       24      047 01668802 24047    Worcester    Worcester County   06\n170       24      001 01713506 24001     Allegany     Allegany County   06\n184       24      510 01702381 24510    Baltimore      Baltimore city   25\n337       24      015 00596115 24015        Cecil        Cecil County   06\n656       24      005 01695314 24005    Baltimore    Baltimore County   06\n817       24      013 01696228 24013      Carroll      Carroll County   06\n875       24      009 01676636 24009      Calvert      Calvert County   06\n909       24      019 00596495 24019   Dorchester   Dorchester County   06\n1026      24      003 01710958 24003 Anne Arundel Anne Arundel County   06\n1051      24      021 01711211 24021    Frederick    Frederick County   06\n     CLASSFP MTFCC CSAFP CBSAFP METDIVFP FUNCSTAT      ALAND     AWATER\n131       H1 G4020   480  41540     &lt;NA&gt;        A 1213156434  586531107\n170       H1 G4020  &lt;NA&gt;  19060     &lt;NA&gt;        A 1093489884   14710932\n184       C7 G4020   548  12580     &lt;NA&gt;        F  209649327   28758743\n337       H1 G4020   428  37980    48864        A  896912533  185281256\n656       H1 G4020   548  12580     &lt;NA&gt;        A 1549740652  215957832\n817       H1 G4020   548  12580     &lt;NA&gt;        A 1159355859   13112464\n875       H1 G4020   548  47900    47894        A  552158542  341580668\n909       H1 G4020   480  15700     &lt;NA&gt;        A 1400573746 1145353068\n1026      H1 G4020   548  12580     &lt;NA&gt;        A 1074353889  448032843\n1051      H1 G4020   548  47900    23224        A 1710922224   17674121\n        INTPTLAT     INTPTLON                       geometry\n131  +38.2221332 -075.3099315 MULTIPOLYGON (((-75.28336 3...\n170  +39.6123134 -078.7031037 MULTIPOLYGON (((-78.80894 3...\n184  +39.3000324 -076.6104761 MULTIPOLYGON (((-76.71151 3...\n337  +39.5623537 -075.9415852 MULTIPOLYGON (((-75.77209 3...\n656  +39.4431666 -076.6165693 MULTIPOLYGON (((-76.69766 3...\n817  +39.5633280 -077.0153297 MULTIPOLYGON (((-76.95782 3...\n875  +38.5227191 -076.5297621 MULTIPOLYGON (((-76.41579 3...\n909  +38.4291957 -076.0474333 MULTIPOLYGON (((-75.913 38....\n1026 +38.9916174 -076.5608941 MULTIPOLYGON (((-76.58029 3...\n1051 +39.4701773 -077.3976358 MULTIPOLYGON (((-77.45475 3..."
+  },
+  {
+    "objectID": "mapping-introduction.html#use-st_crop-or-st_filter-to-trim-data-to-area",
+    "href": "mapping-introduction.html#use-st_crop-or-st_filter-to-trim-data-to-area",
+    "title": "Mapping spatial data with R, ggplot2, and more",
+    "section": "Use st_crop() or st_filter() to trim data to area",
+    "text": "Use st_crop() or st_filter() to trim data to area\nMatch the coordinate reference system for two objects to crop or filter data:\n\nmta_stops &lt;- st_transform(mta_stops, 4269)\n\nmta_stops_cropped &lt;- st_crop(mta_stops, baltimore_bbox)\n\nmta_stops_filtered &lt;- st_filter(mta_stops, baltimore_city)"
+  }
+]
