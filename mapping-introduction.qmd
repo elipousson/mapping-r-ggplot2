@@ -1,7 +1,7 @@
 ---
 title: "Mapping spatial data with R, ggplot2, and more"
 format:
-  revealjs:
+  clean-revealjs:
     scrollable: true
     center: false
     output-location: fragment
@@ -226,7 +226,7 @@ Find a GeoJSON URL and read with `sf::read_sf()`:
 mta_stops <- read_sf("https://geodata.md.gov/imap/rest/services/Transportation/MD_Transit/FeatureServer/9/query?outFields=*&where=1%3D1&f=geojson")
 ```
 
-### Explore data after reading with `dplyr::glimpse()` 
+### Explore data after reading with `dplyr::glimpse()`
 
 Load dplyr and you can take a look at the object attributes with `dplyr::glimpse()`:
 
@@ -255,6 +255,8 @@ This doesn't look quite right yet. Let's try out a few more changes:
 -   Get roads and water from using `tigris::roads()` or `tigris::area_water()`
 -   Apply a color scale from ColorBrewer using `ggplot2::scale_color_brewer()` or `ggplot2::scale_color_distiller()`
 -   Limit stops to city using `sf::st_crop()` or `sf::st_filter()`
+
+### Basic map with `geom_sf()`
 
 ```{r}
 #| echo: false
@@ -479,7 +481,6 @@ inset_md_map <-
 mapbox_dark + inset_md_map
 ```
 
-
 ### Add shadows with `ggfx::with_shadow()`
 
 ```{r}
@@ -502,7 +503,6 @@ md_map <- ggplot() +
 
 md_map
 ```
-
 
 ### Add shadows with `ggfx::with_shadow()`
 
@@ -540,26 +540,25 @@ md_counties_map <- ggplot() +
 plotly::ggplotly(md_counties_map)
 ```
 
-
 ## Resources
 
 ### Essential R packages
 
-- [sf](https://r-spatial.github.io/sf/)
-- [dplyr](https://dplyr.tidyverse.org/)
-- [ggplot2](https://ggplot2.tidyverse.org/)
-- [scales](https://scales.r-lib.org/)
-- [tmap](https://r-tmap.github.io/tmap/) (good alternative to ggplot2 for mapping)
+-   [sf](https://r-spatial.github.io/sf/)
+-   [dplyr](https://dplyr.tidyverse.org/)
+-   [ggplot2](https://ggplot2.tidyverse.org/)
+-   [scales](https://scales.r-lib.org/)
+-   [tmap](https://r-tmap.github.io/tmap/) (good alternative to ggplot2 for mapping)
 
 ### ggplot2 extension packages
 
-- [ggrepel](https://ggrepel.slowkow.com/)
-- [ggfx](https://ggfx.data-imaginist.com/)
-- [ggforce](https://ggforce.data-imaginist.com/)
-- [patchwork](https://patchwork.data-imaginist.com/)
+-   [ggrepel](https://ggrepel.slowkow.com/)
+-   [ggfx](https://ggfx.data-imaginist.com/)
+-   [ggforce](https://ggforce.data-imaginist.com/)
+-   [patchwork](https://patchwork.data-imaginist.com/)
 
 ### Additional packages for spatial data
 
-- [mapview](https://r-spatial.github.io/mapview/)
-- [tigris](https://github.com/walkerke/tigris)
-- [mapboxapi](https://walker-data.com/mapboxapi/)
+-   [mapview](https://r-spatial.github.io/mapview/)
+-   [tigris](https://github.com/walkerke/tigris)
+-   [mapboxapi](https://walker-data.com/mapboxapi/)
